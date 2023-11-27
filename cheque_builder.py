@@ -62,6 +62,7 @@ class ChequeBuilder:
             bottle.set('volume', str(self.random_volume()))
 
         print(ET.tostring(self.root, pretty_print=True).decode())
+
         try:
             if not self.xsd_doc.validate(ET.ElementTree(self.root)):
                 print("Validation error:")

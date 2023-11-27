@@ -1,9 +1,8 @@
-import subprocess
-
-import requests
 from faker import Faker
 from flask import Flask, request, send_file
 from cheque_builder import ChequeBuilder
+
+from xmlschema import XMLSchema
 
 app = Flask(__name__)
 
@@ -20,19 +19,14 @@ def save_xml():
     temp_filename = 'temp_cheque.xml'
     file.save(temp_filename)
 
-    try:
-        subprocess.run(['xmllint', '--sсhema', 'xsd-схема.xsd', temp_filename, '--noout'], check=True)
-    except subprocess.CalledProcessError:
-        return 'Error: File XML invalid'
+    schema = XMLSchema('xsd-схема.xsd')
+    with open(temp_filename, 'r', encoding='utf-8') as f:
+        xml_file = f.read()
 
-    file.save('cheque.xml')
+    if not schema.is_valid(xml_file):
+        return 'File is broken\n'
 
-    try:
-        requests.post('http://localhost:8080/xml', files={'xml_file': open('cheque.xml', 'rb')})
-    except request.exceptions.RequestException as e:
-        return f'Error sending XML file: {e}'
-
-    return 'File saved and sent successfully.'
+    return 'File saved and sent successfully.\n'
 
 
 @app.route('/xml', methods=['GET'])
