@@ -15,32 +15,40 @@ class ChequeBuilder:
         regex_pattern = f'[a-zA-Z0-9]{{{min_value},{max_value}}}'
         return xeger.xeger(regex_pattern)
 
-    def get_random_string_from_file(self, file_name):
+    @staticmethod
+    def get_random_string_from_file(file_name):
         with open(file_name, 'r') as file:
             lines = file.readlines()
             return random.choice(lines).strip()
 
-    def random_price(self):
+    @staticmethod
+    def random_price():
         return round(random.uniform(100.00, 1000.00), 2)
 
-    def random_volume(self):
+    @staticmethod
+    def random_volume():
         step = 0.05
         return round(random.uniform(0.1, 3.0) // step * step, 4)
 
-    def random_int(self, min_value, max_value):
+    @staticmethod
+    def random_int(min_value, max_value):
         return random.randint(min_value, max_value)
 
-    def generate_barcode(self):
+    @staticmethod
+    def generate_barcode():
         return xeger.xeger(r'\d{2}N\w{20}\d[0-1]\d[0-3]\d{10}\w{31}').replace('_', 'A')
 
-    def generate_kpp(self):
+    @staticmethod
+    def generate_kpp():
         return xeger.xeger(r'\d{9}|')
 
-    def random_ru_str(self, min_value, max_value):
+    @staticmethod
+    def random_ru_str(min_value, max_value):
         regex_pattern = f'[а-яА-Я ]{{{min_value},{max_value}}}'
         return xeger.xeger(regex_pattern)
 
-    def random_date(self):
+    @staticmethod
+    def random_date():
         return xeger.xeger(r'[0-3][0-9][0-1][0-9][0-9]{2}[0-2][0-9][0-5][0-9]')
         # return self.fake.date_of_birth()
 
