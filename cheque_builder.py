@@ -1,12 +1,13 @@
 import random
-from xml.etree.ElementTree import Element, SubElement, ElementTree
+import xml.etree.ElementTree as ET
+from lxml import etree as ET
 import xeger
 
 
 class ChequeBuilder:
-    def __init__(self, xsd_shema, faker):
-        self.xsd_shema = xsd_shema
-        self.root = Element('Cheque')
+    def __init__(self, faker):
+        self.xsd_doc = ET.XMLSchema(ET.parse('xsd-схема.xsd'))
+        self.root = ET.Element('Cheque')
         self.fake = faker
 
     @staticmethod
@@ -30,7 +31,7 @@ class ChequeBuilder:
         return random.randint(min_value, max_value)
 
     def generate_barcode(self):
-        return xeger.xeger(r'\d\dN\w{20}\d[0-1]\d[0-3]\d{10}\w{31}')
+        return xeger.xeger(r'\d{2}N\w{20}\d[0-1]\d[0-3]\d{10}\w{31}').replace('_', 'A')
 
     def generate_kpp(self):
         return xeger.xeger(r'\d{9}|')
@@ -40,8 +41,8 @@ class ChequeBuilder:
         return xeger.xeger(regex_pattern)
 
     def random_date(self):
-        # return xeger.xeger(r'[0-3][0-9][0-1][0-9][0-9]{2}[0-2][0-9][0-5][0-9]')
-        return self.fake.date_of_birth()
+        return xeger.xeger(r'[0-3][0-9][0-1][0-9][0-9]{2}[0-2][0-9][0-5][0-9]')
+        # return self.fake.date_of_birth()
 
     def create_xml_file(self):
         self.root.set('inn', self.get_random_string_from_file('INN.txt'))
@@ -54,12 +55,29 @@ class ChequeBuilder:
         self.root.set('datetime', str(self.random_date()))
 
         for _ in range(random.randint(1, 10)):
-            bottle = SubElement(self.root, 'Bottle')
+            bottle = ET.SubElement(self.root, 'Bottle')
             bottle.set('price', str(self.random_price()))
             bottle.set('barcode', self.generate_barcode())
             bottle.set('ean', self.get_random_string_from_file('EAN.txt'))
             bottle.set('volume', str(self.random_volume()))
 
+        print(ET.tostring(self.root, pretty_print=True).decode())
+        try:
+            if not self.xsd_doc.validate(ET.ElementTree(self.root)):
+                print("Validation error:")
+                print(self.xsd_doc.error_log)
+                raise ValueError("The generated XML does not comply with the XSD schema")
+        except Exception as e:
+            print("An error occurred during validation:")
+            print(e)
+            raise
+
+        if not self.xsd_doc.validate(ET.ElementTree(self.root)):
+            raise ValueError("The generated XML does not comply with the XSD schema")
+
     def save_cheque(self, file_path):
-        tree = ElementTree(self.root)
+        if not self.xsd_doc.validate(ET.ElementTree(self.root)):
+            raise ValueError("XML does not match XSD schema")
+
+        tree = ET.ElementTree(self.root)
         tree.write(file_path)

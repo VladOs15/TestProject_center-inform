@@ -21,14 +21,14 @@ def save_xml():
     file.save(temp_filename)
 
     try:
-        subprocess.run(['xmllint', '--shema', 'xsd-схема.xsd', temp_filename, '--noout'], check=True)
+        subprocess.run(['xmllint', '--sсhema', 'xsd-схема.xsd', temp_filename, '--noout'], check=True)
     except subprocess.CalledProcessError:
         return 'Error: File XML invalid'
 
     file.save('cheque.xml')
 
     try:
-        requests.post('http"//localhost:8080/xml', files={'xml_file': open('cheque.xml', 'rb')})
+        requests.post('http://localhost:8080/xml', files={'xml_file': open('cheque.xml', 'rb')})
     except request.exceptions.RequestException as e:
         return f'Error sending XML file: {e}'
 
@@ -37,7 +37,7 @@ def save_xml():
 
 @app.route('/xml', methods=['GET'])
 def get_xml():
-    return send_file('cheque.xml', as_attachment=True)
+    return send_file('cheque.xml')
 
 
 @app.route('/')
@@ -46,16 +46,10 @@ def index():
 
 
 if __name__ == "__main__":
-    with open('xsd-схема.xsd', 'r') as xsd_file:
-        xsd_shema = xsd_file.read()
-
     faker = Faker()
-    cheque_builder = ChequeBuilder(xsd_shema, faker)
+    cheque_builder = ChequeBuilder(faker)
     cheque_builder.create_xml_file()
     cheque_builder.save_cheque('cheque.xml')
 
     cheque_app = ChequeApp(cheque_builder)
-    # app.add_url_rule('/xml', 'save_xml', save_xml, methods=['POST'])
-    # app.add_url_rule('/xml', 'get_xml', get_xml, methods=['GET'])
-    # app.add_url_rule('/', 'index', index)
     app.run(host='localhost', port=8080)
