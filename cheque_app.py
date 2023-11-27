@@ -13,6 +13,7 @@ class ChequeApp:
         self.cheque_builder = cheque_builder
 
 
+@app.route('/xml', methods=['POST'])
 def save_xml():
     file = request.files['xml_file']
 
@@ -34,10 +35,12 @@ def save_xml():
     return 'File saved and sent successfully.'
 
 
+@app.route('/xml', methods=['GET'])
 def get_xml():
     return send_file('cheque.xml', as_attachment=True)
 
 
+@app.route('/')
 def index():
     return 'Welcome to Cheque App!'
 
@@ -52,7 +55,7 @@ if __name__ == "__main__":
     cheque_builder.save_cheque('cheque.xml')
 
     cheque_app = ChequeApp(cheque_builder)
-    app.add_url_rule('/xml', 'save_xml', save_xml, methods=['POST'])
-    app.add_url_rule('/xml', 'get_xml', get_xml, methods=['GET'])
-    app.add_url_rule('/', 'index', index)
-    app.run(port=8080)
+    # app.add_url_rule('/xml', 'save_xml', save_xml, methods=['POST'])
+    # app.add_url_rule('/xml', 'get_xml', get_xml, methods=['GET'])
+    # app.add_url_rule('/', 'index', index)
+    app.run(host='localhost', port=8080)
